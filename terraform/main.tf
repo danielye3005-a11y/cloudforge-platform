@@ -206,3 +206,39 @@ resource "aws_lb_listener" "http" {
     target_group_arn = aws_lb_target_group.app.arn
   }
 }
+
+resource "aws_ecr_repository" "cloudforge" {
+  name                 = "cloudforge-api"
+  image_tag_mutability = "IMMUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+
+  tags = {
+    Name = "cloudforge-api"
+  }
+}
+
+resource "aws_ecr_lifecycle_policy" "cloudforge" {
+  repository = aws_ecr_repository.cloudforge.name
+
+  policy = jsonencode({
+    rules = [
+      {
+        rulePriority = 1
+        description  = "Keep only the latest 10 images"
+
+        selection = {
+          tagStatus   = "any"
+          countType   = "imageCountMoreThan"
+          countNumber = 10
+        }
+
+        action = {
+          type = "expire"
+        }
+      }
+    ]
+  })
+}
