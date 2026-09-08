@@ -1,0 +1,12 @@
+
+replicaCount: 2
+
+image:
+  repository: cloudforge-api
+  tag: "v0.3"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 5000
