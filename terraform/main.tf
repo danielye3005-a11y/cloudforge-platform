@@ -136,13 +136,63 @@ data "aws_ami" "amazon_linux" {
   }
 }
 
+resource "aws_iam_role" "ec2" {
+  name = "cloudforge-ec2-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+
+  tags = {
+    Name = "cloudforge-ec2-role"
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "ecr_read" {
+  role       = aws_iam_role.ec2.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+}
+
+resource "aws_iam_instance_profile" "ec2" {
+  name = "cloudforge-ec2-profile"
+  role = aws_iam_role.ec2.name
+}
+
 resource "aws_instance" "app" {
   ami           = data.aws_ami.amazon_linux.id
   instance_type = "t3.micro"
 
-  subnet_id              = aws_subnet.private_1.id
-  vpc_security_group_ids = [aws_security_group.app.id]
+  subnet_id                   = aws_subnet.public_1.id
+  associate_public_ip_address = true
+  vpc_security_group_ids      = [aws_security_group.app.id]
+  iam_instance_profile        = aws_iam_instance_profile.ec2.name
+  user_data                   = <<-EOF
+    #!/bin/bash
+    set -eux
 
+    dnf install -y docker
+    systemctl enable --now docker
+
+    aws ecr get-login-password --region eu-central-1 | \
+      docker login --username AWS --password-stdin 831617909316.dkr.ecr.eu-central-1.amazonaws.com
+
+    docker pull 831617909316.dkr.ecr.eu-central-1.amazonaws.com/cloudforge-api:v0.3
+
+    docker run -d \
+      --name cloudforge-api \
+      --restart unless-stopped \
+      -p 5000:5000 \
+      831617909316.dkr.ecr.eu-central-1.amazonaws.com/cloudforge-api:v0.3
+  EOF
   tags = {
     Name = "cloudforge-app"
   }
@@ -162,7 +212,8 @@ resource "aws_lb_target_group" "app" {
     unhealthy_threshold = 2
     timeout             = 5
     interval            = 30
-    matcher             = "200"
+
+    matcher = "200"
   }
 
   tags = {
@@ -180,7 +231,13 @@ resource "aws_subnet" "public_2" {
   }
 }
 
+resource "aws_route_table_association" "public_2" {
+  subnet_id      = aws_subnet.public_2.id
+  route_table_id = aws_route_table.public.id
+}
+
 resource "aws_lb" "app" {
+
   name               = "cloudforge-alb"
   internal           = false
   load_balancer_type = "application"
@@ -241,4 +298,19 @@ resource "aws_ecr_lifecycle_policy" "cloudforge" {
       }
     ]
   })
+}
+
+
+resource "aws_lb_target_group_attachment" "app" {
+  target_group_arn = aws_lb_target_group.app.arn
+  target_id        = aws_instance.app.id
+  port             = 5000
+}
+
+resource "aws_vpc_security_group_egress_rule" "app_outbound" {
+  security_group_id = aws_security_group.app.id
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1"
+
+  description = "Allow outbound traffic from the application"
 }
