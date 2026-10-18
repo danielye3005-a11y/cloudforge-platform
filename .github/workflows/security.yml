@@ -1,18 +1,23 @@
 name: Container Security
+
 on:
   push:
   pull_request:
+
 jobs:
   trivy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Build Docker image
         run: docker build -t cloudforge-api:security .
+
+      - name: Install Trivy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget
+          wget -qO- https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin
+
       - name: Scan Docker image
-        uses: aquasecurity/trivy-action@v0.33.1
-        with:
-          image-ref: cloudforge-api:security
-          format: table
-          exit-code: '1'
-          severity: CRITICAL,HIGH
+        run: trivy image --exit-code 1 --severity HIGH,CRITICAL cloudforge-api:security
