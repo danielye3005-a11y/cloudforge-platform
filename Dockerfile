@@ -1,9 +1,9 @@
-FROM python:3.12-slim
-RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
+FROM python:3.12-alpine
+RUN apk upgrade --no-cache
 
 WORKDIR /app
 
-RUN useradd --create-home --shell /usr/sbin/nologin cloudforge
+RUN adduser -D -h /home/cloudforge -s /sbin/nologin cloudforge
 
 COPY requirements.txt .
 
