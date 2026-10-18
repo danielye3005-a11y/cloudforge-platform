@@ -2,7 +2,7 @@ replicaCount: 2
 
 image:
   repository: cloudforge-api
-  tag: "v0.3"
+  tag: "v0.4"
   pullPolicy: IfNotPresent
 
 service:
