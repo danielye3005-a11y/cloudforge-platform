@@ -1,94 +1,261 @@
-# CloudForge ☁️
+# ☁️ CloudForge Platform
 
-A cloud-native DevOps portfolio project demonstrating application containerization, Kubernetes deployment, infrastructure as code, and AWS integration.
+### A Hands-On DevOps Platform Built with Kubernetes, GitOps, CI/CD, Monitoring, and Container Security
 
-## Overview
+CloudForge is a DevOps portfolio project demonstrating how to build, containerize, deploy, monitor, and secure a Python application using modern cloud-native tools.
 
-CloudForge is a Python Flask API packaged with Docker and deployed to a local Kubernetes cluster using Helm.
+The project includes a Flask REST API backed by PostgreSQL, Kubernetes deployments managed with Helm, GitOps configuration using Argo CD, automated GitHub Actions workflows, and observability with Prometheus and Grafana.
 
-The project also includes Terraform configuration for AWS infrastructure, including networking, compute, load balancing, IAM, and Amazon ECR.
+---
 
-## Technology Stack
+## 🏗️ Architecture
 
-- **Application:** Python, Flask, Gunicorn
-- **Containers:** Docker
-- **Orchestration:** Kubernetes (k3d)
-- **Package Management:** Helm
-- **Infrastructure as Code:** Terraform
-- **Cloud:** AWS (ECR, EC2, VPC, ALB, IAM)
-- **Version Control:** Git and GitHub
+```text
+                  Developer
+                      |
+                      v
+                 GitHub Repo
+                      |
+           +----------+----------+
+           |                     |
+           v                     v
+      GitHub Actions       Container Security
+       CI Pipeline          Trivy Scanner
+           |                     |
+           +----------+----------+
+                      |
+                      v
+                 Docker Image
+                      |
+                      v
+                  Kubernetes
+                   (k3d)
+                      |
+              +-------+-------+
+              |               |
+              v               v
+          Flask API       PostgreSQL
+              |
+              v
+       Prometheus Metrics
+              |
+              v
+            Grafana
 
-## Verified Results
+       Argo CD + Helm: GitOps
+```
 
-- Docker image built successfully
-- Docker image pushed to Amazon ECR
-- Kubernetes cluster running locally with k3d
-- Application deployed successfully using Helm
-- Two application Pods running and ready
-- `/health` endpoint returned HTTP 200
-- `/ready` endpoint returned a ready status
-- `/version` endpoint returned application version information
-- Terraform configuration passed validation
+---
 
-## Deployment Status
+## 🛠️ Technology Stack
 
-The application has been deployed and tested on local Kubernetes.
-
-Amazon ECR is configured and contains the application image. The full AWS infrastructure defined in Terraform has not yet been deployed.
-
-## API Endpoints
-
-| Endpoint | Purpose |
+| Category | Technologies |
 |---|---|
-| `/` | API home |
-| `/health` | Health check |
-| `/ready` | Readiness check |
-| `/version` | Application version |
+| Application | Python, Flask, Gunicorn |
+| Database | PostgreSQL |
+| Containers | Docker, Alpine Linux |
+| Orchestration | Kubernetes, k3d |
+| Packaging | Helm |
+| GitOps | Argo CD |
+| CI/CD | GitHub Actions |
+| Security | Trivy |
+| Monitoring | Prometheus, Grafana |
+| Logging | Loki, Promtail |
+| Infrastructure as Code | Terraform |
+| Cloud Infrastructure | AWS configuration (not deployed) |
 
-## Local Kubernetes Deployment
+---
 
-Prerequisites:
-- Docker
-- k3d
-- kubectl
-- Helm
+## 🚀 Features
 
-Create a local Kubernetes cluster:
+### REST API
+- Python Flask application
+- PostgreSQL-backed CRUD functionality
+- Containerized application
+- Non-root container user
+
+### Kubernetes
+- Local Kubernetes environment using k3d
+- Helm-managed application deployment
+- Two running API replicas
+- Horizontal Pod Autoscaler configuration
+- Persistent storage for PostgreSQL
+
+### CI/CD
+- Automated GitHub Actions CI workflow
+- Python test execution
+- Helm validation
+- Container security scanning
+
+### GitOps
+- Argo CD Application configuration
+- Helm-based deployment management
+- Git repository as the source of deployment configuration
+
+### Observability
+- Prometheus metrics collection
+- Grafana monitoring dashboard
+- API replica, CPU, and memory monitoring
+- Loki and Promtail logging components
+
+### Security
+- Trivy container image vulnerability scanning
+- HIGH and CRITICAL vulnerability gate
+- Alpine-based Python container image
+- Non-root application execution
+
+---
+
+## 🔐 Container Security
+
+CloudForge uses Trivy to scan its container image for known vulnerabilities.
+
+During development, the original Debian-based image produced multiple HIGH-severity findings.
+
+Switching to an Alpine-based Python image reduced the reported findings in the local scan:
+
+| Severity | Local Scan Result |
+|---|---|
+| HIGH | 0 |
+| CRITICAL | 0 |
+
+The GitHub Actions Container Security workflow also passed after the change.
+
+**Note:** Vulnerability scan results reflect the image and vulnerability database at scan time. They do not guarantee that an application is free from security risks.
+
+### Security Workflow
+
+[![Container Security](https://github.com/danielye3005-a11y/cloudforge-platform/actions/workflows/security.yml/badge.svg)](https://github.com/danielye3005-a11y/cloudforge-platform/actions/workflows/security.yml)
+
+---
+
+## 🔄 Continuous Integration
+
+The CI workflow validates the application and deployment configuration.
+
+[![CloudForge CI](https://github.com/danielye3005-a11y/cloudforge-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/danielye3005-a11y/cloudforge-platform/actions/workflows/ci.yml)
+
+The latest verified run after the Alpine migration completed successfully.
+
+---
+
+## 📊 Monitoring
+
+CloudForge includes a Grafana dashboard with panels for:
+
+- Desired API replicas
+- Available API replicas
+- API CPU usage
+- API memory usage
+- Pod CPU usage
+- Pod memory usage
+
+Prometheus collects Kubernetes metrics used by the dashboard.
+
+### Access Grafana
 
 ```bash
-k3d cluster create cloudforge --servers 1 --agents 0 --no-lb
+kubectl -n monitoring port-forward \
+  svc/cloudforge-monitoring-grafana 3000:80
 ```
 
-### Import Docker Image
+Open Grafana locally on port `3000`.
 
-```bash
-k3d image import cloudforge-api:v0.3 -c cloudforge
+---
+
+## ☸️ Kubernetes & GitOps
+
+The application is deployed to a local k3d Kubernetes cluster.
+
+Helm manages the Kubernetes application resources.
+
+Argo CD tracks the Git repository and Helm configuration.
+
+The application previously reached:
+
+- Argo CD: **Synced**
+- Argo CD: **Healthy**
+- API Deployment: **2/2 Ready**
+
+**Deployment note:** The latest Alpine image has passed local tests and CI, but has not yet been rolled out to the running Kubernetes deployment.
+
+---
+
+## 🧪 Testing
+
+The project includes automated Python tests.
+
+The latest verified test execution completed with:
+
+```text
+5 passed
 ```
 
-### Deploy with Helm
+---
 
-```bash
-helm install cloudforge ./helm/cloudforge --kube-context k3d-cloudforge
+## 📁 Repository Structure
+
+```text
+cloudforge-platform/
+├── .github/workflows/   # CI and security workflows
+├── app/                 # Flask application
+├── gitops/              # GitOps configuration
+├── helm/cloudforge/     # Helm chart
+├── k8s/                 # Kubernetes manifests
+├── monitoring/          # Observability configuration
+├── terraform/           # Infrastructure as Code
+├── tests/               # Automated tests
+├── Dockerfile           # Application container
+└── README.md            # Project documentation
 ```
 
-### Verify Kubernetes Pods
+---
 
-```bash
-kubectl --context k3d-cloudforge get pods
-```
+## ☁️ Infrastructure as Code
 
-### Test the API
+The repository includes Terraform configuration for AWS infrastructure.
 
-Start port-forwarding:
+**Current status:** Infrastructure code is prepared, but AWS resources have not been deployed as part of this project.
 
-```bash
-kubectl --context k3d-cloudforge port-forward svc/cloudforge-api 8085:80
-```
+---
 
-In a second terminal:
+## 📌 Project Status
 
-```bash
-curl http://127.0.0.1:8085/health
-curl http://127.0.0.1:8085/ready
-curl http://127.0.0.1:8085/version
-```
+| Component | Status |
+|---|---|
+| Flask API | Implemented |
+| PostgreSQL | Running locally in Kubernetes |
+| Docker | Working |
+| Kubernetes / k3d | Working |
+| Helm | Working |
+| Argo CD | Synced & Healthy in last verification |
+| GitHub Actions CI | Passed |
+| Trivy Security Workflow | Passed |
+| Prometheus | Working |
+| Grafana Dashboard | Working |
+| Loki | Working |
+| Promtail | Requires troubleshooting |
+| Terraform | Configuration prepared |
+| AWS Deployment | Not deployed |
+
+---
+
+## 🎯 Project Goals
+
+CloudForge was built to gain practical experience with:
+
+- Containerization
+- Kubernetes application deployment
+- GitOps workflows
+- CI/CD automation
+- Container vulnerability management
+- Infrastructure as Code
+- Monitoring and observability
+
+---
+
+## 👨‍💻 Author
+
+**DevOps Portfolio Project**
+
+Built as a hands-on learning project demonstrating practical DevOps engineering skills.
