@@ -1,0 +1,18 @@
+name: Container Security
+on:
+  push:
+  pull_request:
+jobs:
+  trivy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t cloudforge-api:security .
+      - name: Scan Docker image
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: cloudforge-api:security
+          format: table
+          exit-code: '1'
+          severity: CRITICAL,HIGH

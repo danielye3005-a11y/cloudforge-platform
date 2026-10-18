@@ -1,0 +1,29 @@
+{
+  "title": "CloudForge Overview",
+  "uid": "cloudforge-overview",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Available API Replicas",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "kube_deployment_status_replicas_available{deployment=\"cloudforge-api\"}",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      }
+    }
+  ]
+}
