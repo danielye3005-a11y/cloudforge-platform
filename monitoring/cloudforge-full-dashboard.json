@@ -1,0 +1,158 @@
+{
+  "title": "CloudForge Full Monitoring",
+  "uid": "cloudforge-full-monitoring",
+  "tags": [
+    "cloudforge",
+    "kubernetes",
+    "devops"
+  ],
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Available API Replicas",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "kube_deployment_status_replicas_available{namespace=\"default\",deployment=\"cloudforge-api\"}",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "id": 2,
+      "title": "Running API Pods",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "count(kube_pod_status_phase{namespace=\"default\",pod=~\"cloudforge-api-.*\",phase=\"Running\"} == 1)",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "id": 3,
+      "title": "API CPU Usage",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"default\",pod=~\"cloudforge-api-.*\",container!=\"\",container!=\"POD\"}[5m]))",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cores"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "API Memory Usage",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "sum(container_memory_working_set_bytes{namespace=\"default\",pod=~\"cloudforge-api-.*\",container!=\"\",container!=\"POD\"})",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "CPU Usage by Pod",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"default\",pod=~\"cloudforge-api-.*\",container!=\"\",container!=\"POD\"}[5m]))",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "x": 0,
+        "y": 16,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cores"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "title": "Memory Usage by Pod",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "sum by (pod) (container_memory_working_set_bytes{namespace=\"default\",pod=~\"cloudforge-api-.*\",container!=\"\",container!=\"POD\"})",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "x": 12,
+        "y": 16,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        }
+      }
+    }
+  ]
+}
