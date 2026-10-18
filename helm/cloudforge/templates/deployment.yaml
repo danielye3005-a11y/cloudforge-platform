@@ -20,6 +20,20 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
 
+          env:
+            - name: DB_HOST
+              value: postgres.cloudforge-db.svc.cluster.local
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              value: cloudforge
+            - name: DB_USER
+              value: cloudforge
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: cloudforge-db-credentials
+                  key: POSTGRES_PASSWORD
           ports:
             - containerPort: 5000
 

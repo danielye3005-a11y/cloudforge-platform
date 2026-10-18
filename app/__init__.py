@@ -35,6 +35,8 @@ def create_app(config_class=Config):
     )
 
     app.register_blueprint(main)
+    from app.tasks import tasks
+    app.register_blueprint(tasks)
 
     @app.errorhandler(404)
     def not_found(error):
