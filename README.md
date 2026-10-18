@@ -259,3 +259,11 @@ CloudForge was built to gain practical experience with:
 **DevOps Portfolio Project**
 
 Built as a hands-on learning project demonstrating practical DevOps engineering skills.
+
+
+## 📊 Grafana Monitoring Dashboard
+
+Real-time monitoring of CloudForge API replicas, running pods, CPU usage, and memory consumption.
+
+![CloudForge Grafana Dashboard](docs/images/cloudforge-grafana.png)
+
